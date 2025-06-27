@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ek-bg-main: #2C2C42;
+    --ek-accent-gold: #FFD180;
+    --ek-accent-mint: #8EF6E4;
+    --ek-text-main: #F6F8FF;
+    --ek-text-muted: #B8BACF;
+    --ek-error: #EA5C5A;
+    --ek-success: #69E99C;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Focus styles for accessibility */
+  *:focus {
+    outline: 2px solid var(--ek-accent-mint);
+    outline-offset: 2px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--ek-bg-main);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--ek-accent-gold);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ek-accent-mint);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-ek-accent-gold hover:bg-ek-accent-gold/80 text-ek-bg-main font-semibold py-3 px-6 rounded-lg transition-colors;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-ek-accent-mint text-ek-accent-mint hover:bg-ek-accent-mint hover:text-ek-bg-main font-semibold py-3 px-6 rounded-lg transition-colors;
+  }
+
+  .card {
+    @apply bg-ek-bg-main border border-ek-accent-gold/30 rounded-xl p-6 shadow-lg;
+  }
+
+  .input-primary {
+    @apply w-full px-4 py-3 bg-ek-bg-main border border-ek-accent-gold/30 rounded-lg text-ek-text-main placeholder-ek-text-muted focus:outline-none focus:border-ek-accent-mint transition-colors;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+
+  @keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+}
