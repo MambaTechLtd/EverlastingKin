@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Search, Heart, Shield, Users, ArrowRight, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AuthPopup from '../components/Auth/AuthPopup'
+import UniversalSearch from '../components/Search/UniversalSearch'
 
 const HomePage: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false)
@@ -29,13 +30,19 @@ const HomePage: React.FC = () => {
                 with their families. Supporting mortuary staff, police departments, and families 
                 during their most difficult moments.
               </p>
+              
+              {/* Universal Search */}
+              <div className="mt-12">
+                <UniversalSearch />
+              </div>
+
               <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
                 <Link 
                   to="/search"
                   className="bg-ek-accent-gold hover:bg-ek-accent-gold/80 text-ek-bg-main px-8 py-4 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
                 >
                   <Search className="w-5 h-5" />
-                  <span>Start Your Search</span>
+                  <span>Advanced Search</span>
                 </Link>
                 <button
                   onClick={() => handleAuthClick('signup')}
@@ -63,25 +70,22 @@ const HomePage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Public Search */}
+              {/* Universal Search */}
               <div className="bg-ek-bg-main border border-ek-accent-gold/30 rounded-xl p-8 hover:border-ek-accent-mint/50 transition-colors group">
                 <div className="w-12 h-12 bg-ek-accent-gold/20 rounded-lg flex items-center justify-center mb-6 group-hover:bg-ek-accent-mint/20 transition-colors">
                   <Search className="w-6 h-6 text-ek-accent-gold group-hover:text-ek-accent-mint" />
                 </div>
                 <h3 className="text-xl font-semibold text-ek-text-main mb-4">
-                  Respectful Search
+                  Smart Search
                 </h3>
                 <p className="text-ek-text-muted mb-6">
-                  Search our secure database with dignity and privacy. Our system protects 
-                  sensitive information while helping families find the answers they need.
+                  Our intelligent search understands natural language and helps you find information 
+                  using names, locations, descriptions, or distinguishing features.
                 </p>
-                <Link 
-                  to="/search"
-                  className="text-ek-accent-mint hover:text-ek-accent-mint/80 font-medium flex items-center space-x-2"
-                >
-                  <span>Search Now</span>
+                <div className="text-ek-accent-mint hover:text-ek-accent-mint/80 font-medium flex items-center space-x-2">
+                  <span>Try searching above</span>
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </div>
               </div>
 
               {/* Professional Support */}

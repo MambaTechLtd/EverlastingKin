@@ -1,11 +1,11 @@
 import React from 'react'
-import Dashboard from '../components/Dashboard/Dashboard'
+import EnhancedDashboard from '../components/Dashboard/EnhancedDashboard'
 
 const DashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Dashboard />
+        <EnhancedDashboard />
       </div>
     </div>
   )
