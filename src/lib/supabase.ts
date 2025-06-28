@@ -15,8 +15,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// Database types - properly exported
-export type User = {
+// Database types - defined without export first
+type User = {
   id: string
   email: string
   role: 'public' | 'mortuary_staff' | 'police' | 'admin'
@@ -30,7 +30,7 @@ export type User = {
   updated_at: string
 }
 
-export type DeceasedRecord = {
+type DeceasedRecord = {
   id: string
   name: string
   date_of_death: string
@@ -43,7 +43,7 @@ export type DeceasedRecord = {
   updated_at: string
 }
 
-export type PoliceReport = {
+type PoliceReport = {
   id: string
   deceased_record_id: string
   report_number: string
@@ -54,7 +54,7 @@ export type PoliceReport = {
   updated_at: string
 }
 
-export type NextOfKin = {
+type NextOfKin = {
   id: string
   deceased_record_id: string
   name: string
@@ -67,7 +67,7 @@ export type NextOfKin = {
   updated_at: string
 }
 
-export type AuditLog = {
+type AuditLog = {
   id: string
   user_id?: string
   action: string
@@ -78,7 +78,7 @@ export type AuditLog = {
   created_at: string
 }
 
-export type NotificationLog = {
+type NotificationLog = {
   id: string
   user_id?: string
   email?: string
@@ -91,7 +91,7 @@ export type NotificationLog = {
   created_at: string
 }
 
-export type AdminRequest = {
+type AdminRequest = {
   id: string
   user_id: string
   request_type: 'role_change' | 'access_request' | 'data_correction'
@@ -102,6 +102,17 @@ export type AdminRequest = {
   reviewed_by?: string
   reviewed_at?: string
   created_at: string
+}
+
+// Explicit type-only exports
+export type {
+  User,
+  DeceasedRecord,
+  PoliceReport,
+  NextOfKin,
+  AuditLog,
+  NotificationLog,
+  AdminRequest
 }
 
 // Helper functions for common database operations
