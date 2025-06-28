@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { supabase, AppUser, getUserProfile, logAuditAction } from '../lib/supabase'
 import { validateAdminCredentials, isAdminAccount } from '../lib/adminAccounts'
+import { useNavigate } from 'react-router-dom'
 
 interface AuthContextType {
   user: AppUser | null
@@ -49,6 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await fetchUserProfile(session.user.id)
           if (event === 'SIGNED_IN') {
             await logAuditAction('User signed in')
+            // Auto-redirect to dashboard after successful sign in
+            window.location.href = '/dashboard'
           }
         } else {
           setUser(null)
@@ -158,6 +161,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           details: { email, admin_account: true }
         })
         
+        // Auto-redirect to dashboard
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 100)
+        
         return { error: null }
       }
       
@@ -195,6 +203,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null)
       setSession(null)
     }
+    
+    // Redirect to home page
+    window.location.href = '/'
   }
 
   const verifyOTP = async (email: string, token: string) => {
