@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { X, Mail, Lock, User, Phone, Building, Badge, AlertCircle, CheckCircle } from 'lucide-react'
+import { X, Mail, Lock, User, Phone, Building, Badge, AlertCircle, CheckCircle, Shield } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { isAdminAccount } from '../../lib/adminAccounts'
 
 interface AuthPopupProps {
   isOpen: boolean
@@ -27,6 +28,8 @@ const AuthPopup: React.FC<AuthPopupProps> = ({ isOpen, onClose, mode, onToggleMo
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const isAdminEmail = isAdminAccount(formData.email)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -37,20 +40,30 @@ const AuthPopup: React.FC<AuthPopupProps> = ({ isOpen, onClose, mode, onToggleMo
       if (mode === 'signin') {
         const { error } = await signIn(formData.email, formData.password)
         if (error) {
-          if (error.message.includes('Email not confirmed')) {
+          if (error.message.includes('Email not confirmed') && !isAdminEmail) {
             setStep('otp')
             setSuccess('Please check your email for the verification code.')
           } else {
             setError(error.message)
           }
         } else {
-          setSuccess('Successfully signed in!')
+          if (isAdminEmail) {
+            setSuccess('Admin access granted!')
+          } else {
+            setSuccess('Successfully signed in!')
+          }
           setTimeout(() => {
             onClose()
             resetForm()
           }, 1000)
         }
       } else {
+        // Sign up mode
+        if (isAdminEmail) {
+          setError('Admin accounts should use sign in instead of registration.')
+          return
+        }
+        
         const { error } = await signUp(formData.email, formData.password, {
           first_name: formData.firstName,
           last_name: formData.lastName,
@@ -174,7 +187,18 @@ const AuthPopup: React.FC<AuthPopupProps> = ({ isOpen, onClose, mode, onToggleMo
                     className="w-full pl-10 pr-4 py-3 bg-ek-bg-main border border-ek-accent-gold/30 rounded-lg text-ek-text-main placeholder-ek-text-muted focus:outline-none focus:border-ek-accent-mint transition-colors"
                     placeholder="Enter your email"
                   />
+                  {isAdminEmail && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <Shield className="w-4 h-4 text-ek-accent-gold" />
+                    </div>
+                  )}
                 </div>
+                {isAdminEmail && (
+                  <p className="text-xs text-ek-accent-gold mt-1 flex items-center space-x-1">
+                    <Shield className="w-3 h-3" />
+                    <span>Admin account detected</span>
+                  </p>
+                )}
               </div>
 
               {/* Password */}
@@ -195,8 +219,23 @@ const AuthPopup: React.FC<AuthPopupProps> = ({ isOpen, onClose, mode, onToggleMo
                 </div>
               </div>
 
-              {/* Sign Up Additional Fields */}
-              {mode === 'signup' && (
+              {/* Admin Account Notice */}
+              {isAdminEmail && mode === 'signin' && (
+                <div className="bg-ek-accent-gold/10 border border-ek-accent-gold/30 rounded-lg p-4">
+                  <div className="flex items-start space-x-2">
+                    <Shield className="w-5 h-5 text-ek-accent-gold mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-ek-text-main">
+                      <p className="font-medium mb-1">Administrator Access</p>
+                      <p className="text-ek-text-muted">
+                        You are signing in with full administrative privileges.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sign Up Additional Fields - Only show for non-admin accounts */}
+              {mode === 'signup' && !isAdminEmail && (
                 <>
                   {/* Name Fields */}
                   <div className="grid grid-cols-2 gap-4">
@@ -323,6 +362,21 @@ const AuthPopup: React.FC<AuthPopupProps> = ({ isOpen, onClose, mode, onToggleMo
                 </>
               )}
 
+              {/* Admin Registration Block */}
+              {mode === 'signup' && isAdminEmail && (
+                <div className="bg-ek-error/10 border border-ek-error/30 rounded-lg p-4">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-5 h-5 text-ek-error mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-ek-text-main">
+                      <p className="font-medium mb-1">Admin Account Detected</p>
+                      <p className="text-ek-text-muted">
+                        This email is registered as an administrator account. Please use the sign in option instead.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Error/Success Messages */}
               {error && (
                 <div className="flex items-center space-x-2 text-ek-error text-sm">
@@ -341,7 +395,7 @@ const AuthPopup: React.FC<AuthPopupProps> = ({ isOpen, onClose, mode, onToggleMo
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (mode === 'signup' && isAdminEmail)}
                 className="w-full bg-ek-accent-gold hover:bg-ek-accent-gold/80 disabled:opacity-50 disabled:cursor-not-allowed text-ek-bg-main font-semibold py-3 px-4 rounded-lg transition-colors"
               >
                 {loading ? 'Processing...' : (mode === 'signin' ? 'Sign In' : 'Create Account')}

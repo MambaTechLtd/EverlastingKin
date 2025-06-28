@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User as SupabaseUser, Session } from '@supabase/supabase-js'
 import { supabase, AppUser, getUserProfile, logAuditAction } from '../lib/supabase'
+import { validateAdminCredentials, isAdminAccount } from '../lib/adminAccounts'
 
 interface AuthContextType {
   user: AppUser | null
@@ -75,6 +76,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true)
       
+      // Check if this is an admin account trying to register
+      if (isAdminAccount(email)) {
+        return { error: { message: 'Admin accounts should use sign in instead of registration.' } }
+      }
+      
       // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -95,9 +101,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: authError }
       }
 
-      await logAuditAction('User registration attempt', 'users', authData.user?.id, {
-        email,
-        role: userData.role || 'public'
+      await logAuditAction('User registration attempt', {
+        table_name: 'users',
+        record_id: authData.user?.id,
+        details: {
+          email,
+          role: userData.role || 'public'
+        }
       })
 
       return { error: null }
@@ -111,13 +121,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true)
+      
+      // Check if this is a predefined admin account
+      const adminAccount = validateAdminCredentials(email, password)
+      if (adminAccount) {
+        // Create a mock session for admin accounts
+        setUser(adminAccount.profile)
+        setSession({
+          access_token: 'admin-token',
+          refresh_token: 'admin-refresh',
+          expires_in: 3600,
+          expires_at: Date.now() + 3600000,
+          token_type: 'bearer',
+          user: {
+            id: adminAccount.profile.id,
+            email: adminAccount.profile.email,
+            aud: 'authenticated',
+            role: 'authenticated',
+            email_confirmed_at: new Date().toISOString(),
+            phone_confirmed_at: null,
+            confirmed_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            app_metadata: { provider: 'admin', providers: ['admin'] },
+            user_metadata: {
+              first_name: adminAccount.profile.first_name,
+              last_name: adminAccount.profile.last_name,
+              role: 'admin'
+            },
+            identities: [],
+            created_at: adminAccount.profile.created_at,
+            updated_at: adminAccount.profile.updated_at
+          }
+        } as Session)
+        
+        await logAuditAction('Admin direct sign in', {
+          details: { email, admin_account: true }
+        })
+        
+        return { error: null }
+      }
+      
+      // Regular Supabase authentication for non-admin accounts
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       
       if (error) {
-        await logAuditAction('Failed sign in attempt', undefined, undefined, { email })
+        await logAuditAction('Failed sign in attempt', {
+          details: { email }
+        })
       }
       
       return { error }
@@ -130,13 +183,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await logAuditAction('User signed out')
-    await supabase.auth.signOut()
-    setUser(null)
-    setSession(null)
+    
+    // Check if this is an admin session
+    if (user && (user.id === 'admin-eva-001' || user.id === 'admin-expert-001')) {
+      // For admin accounts, just clear the local state
+      setUser(null)
+      setSession(null)
+    } else {
+      // For regular users, use Supabase signOut
+      await supabase.auth.signOut()
+      setUser(null)
+      setSession(null)
+    }
   }
 
   const verifyOTP = async (email: string, token: string) => {
     try {
+      // Admin accounts don't need OTP verification
+      if (isAdminAccount(email)) {
+        return { error: { message: 'Admin accounts do not require OTP verification.' } }
+      }
+      
       const { error } = await supabase.auth.verifyOtp({
         email,
         token,
@@ -144,7 +211,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
       
       if (!error) {
-        await logAuditAction('OTP verification successful', undefined, undefined, { email })
+        await logAuditAction('OTP verification successful', {
+          details: { email }
+        })
       }
       
       return { error }
@@ -155,13 +224,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resendOTP = async (email: string) => {
     try {
+      // Admin accounts don't need OTP
+      if (isAdminAccount(email)) {
+        return { error: { message: 'Admin accounts do not require OTP verification.' } }
+      }
+      
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
       })
       
       if (!error) {
-        await logAuditAction('OTP resend requested', undefined, undefined, { email })
+        await logAuditAction('OTP resend requested', {
+          details: { email }
+        })
       }
       
       return { error }
