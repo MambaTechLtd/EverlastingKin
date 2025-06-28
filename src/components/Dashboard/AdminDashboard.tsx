@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Users, FileText, Shield, Clock, CheckCircle, XCircle, AlertTriangle, Eye } from 'lucide-react'
-import { supabase, User, DeceasedRecord, AuditLog } from '../../lib/supabase'
+import { supabase, AppUser, DeceasedRecord, AuditLog } from '../../lib/supabase'
 
 const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState({
@@ -9,7 +9,7 @@ const AdminDashboard: React.FC = () => {
     totalRecords: 0,
     recentActivity: 0
   })
-  const [pendingUsers, setPendingUsers] = useState<User[]>([])
+  const [pendingUsers, setPendingUsers] = useState<AppUser[]>([])
   const [recentLogs, setRecentLogs] = useState<AuditLog[]>([])
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'records' | 'logs'>('overview')
   const [loading, setLoading] = useState(true)
@@ -207,7 +207,7 @@ const AdminDashboard: React.FC = () => {
                       <div className="flex-1">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-ek-accent-mint/20 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-ek-accent-mint" />
+                            <Users className="w-5 h-5 text-ek-accent-mint" />
                           </div>
                           <div>
                             <h4 className="font-medium text-ek-text-main">

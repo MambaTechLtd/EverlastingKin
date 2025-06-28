@@ -1,17 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User as SupabaseUser, Session } from '@supabase/supabase-js'
-import { supabase, User, getUserProfile, logAuditAction } from '../lib/supabase'
+import { supabase, AppUser, getUserProfile, logAuditAction } from '../lib/supabase'
 
 interface AuthContextType {
-  user: User | null
+  user: AppUser | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string, userData: Partial<User>) => Promise<{ error: any }>
+  signUp: (email: string, password: string, userData: Partial<AppUser>) => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
   verifyOTP: (email: string, token: string) => Promise<{ error: any }>
   resendOTP: (email: string) => Promise<{ error: any }>
-  getCurrentUser: () => Promise<User | null>
+  getCurrentUser: () => Promise<AppUser | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -25,7 +25,7 @@ export const useAuth = () => {
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AppUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const signUp = async (email: string, password: string, userData: Partial<User>) => {
+  const signUp = async (email: string, password: string, userData: Partial<AppUser>) => {
     try {
       setLoading(true)
       
@@ -170,7 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const getCurrentUser = async (): Promise<User | null> => {
+  const getCurrentUser = async (): Promise<AppUser | null> => {
     if (user) return user
     
     const { data: { user: authUser } } = await supabase.auth.getUser()
